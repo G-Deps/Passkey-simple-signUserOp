@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
@@ -102,7 +103,14 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 
 	user := datastore.GetOrCreateUser(username) // Find or create the new user
 
-	options, session, err := webAuthn.BeginRegistration(user)
+	options, session, err := webAuthn.BeginRegistration(user, webauthn.WithCredentialParameters(
+		[]protocol.CredentialParameter{
+			{
+				Type:      protocol.PublicKeyCredentialType,
+				Algorithm: -7, // ES256 algorithm
+			},
+		},
+	))
 	if err != nil {
 		msg := fmt.Sprintf("can't begin registration: %s", err.Error())
 		l.Printf("[ERRO] %s", msg)
